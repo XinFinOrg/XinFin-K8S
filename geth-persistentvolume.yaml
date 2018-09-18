@@ -1,0 +1,114 @@
+apiVersion: v1
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: hp-pv-001
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/data001"
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: hp-pv-002
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/data002"
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: hp-pv-003
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/data003"
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: hp-pv-004
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/data004"
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: hp-pv-005
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/data005"
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: hp-pv-006
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/data006"
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: geth-volume
+spec:
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: 5Gi
+  hostPath:
+    path: /data/boot-node/
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: geth-volume
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi

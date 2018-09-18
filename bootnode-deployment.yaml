@@ -1,0 +1,53 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: bootnode
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        role: bootnode
+        environment: production
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: bootnode
+          image: xinfinorg/quorum:istanbul-tools-k8s
+          imagePullPolicy: IfNotPresent
+          args:
+            - "bootnode"
+            - "-addr"
+            - ":30301"
+            - "-nodekey"
+            - "/nodekey/bootnode-0"            
+            - "-verbosity"
+            - "9"
+            - "-nat"
+            - "none"
+          env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          ports:
+          - containerPort: 30301
+            protocol: TCP
+            name: geth-tcp
+          - containerPort: 30301
+            protocol: UDP
+            name: geth-udp
+          volumeMounts:
+          - mountPath: "/etc/ethereum/shared"
+            name: gethroot
+          - mountPath: /nodekey
+            name: nodekey                                        
+      volumes:
+      - name: gethroot
+        persistentVolumeClaim:
+          claimName: geth-volume
+      - name: nodekey
+        secret:
+          secretName: minernode-secret

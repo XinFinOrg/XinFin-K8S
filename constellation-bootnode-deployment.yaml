@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: constellation-bootnode-svc
+spec:
+  selector:
+    role: constellation-bootnode
+  type: NodePort
+  ports:
+    - name: constellation-bootnode-gossip
+      protocol: TCP
+      port: 32000
+      targetPort: 32000
+      nodePort: 32000
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: constellation-bootnode
+spec:
+  serviceName: 'constellation-bootnode'
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        role: constellation-bootnode
+        environment: production
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: node
+          image: xinfinorg/quorum:istanbul-tools-k8s
+          imagePullPolicy: IfNotPresent       
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name               
+          command: ["/bin/bash"]
+          args:
+          - "-c"                    
+          - "constellation-node --url=http://localhost:32000/ --port=32000 --socket=qdata/tm.ipc --publickeys=qdata/tm.pub --privatekeys=qdata/tm.key --storage=qdata/constellation --verbosity=3 --tls=off"
+          ports:
+            - containerPort: 32000
+              protocol: TCP
+              name: const-tcp
+            - containerPort: 32000
+              protocol: UDP
+              name: const-udp            
+          volumeMounts:
+          - mountPath: /qdata
+            name: constellation-bootnode-persistent-volume                                                  
+        
+      initContainers:
+      - name: init-constellation
+        image: xinfinorg/quorum:istanbul-tools-k8s
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash"]
+        args:  
+        - "-c"                   
+        - constellation-node --generatekeys=qdata/tm < /dev/null > /dev/null;      
+        volumeMounts:                            
+        - name: constellation-bootnode-persistent-volume
+          mountPath: /qdata                                            
+
+  volumeClaimTemplates:
+  - metadata:
+      name: constellation-bootnode-persistent-volume
+    spec:
+      storageClassName: manual
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+      selector:
+        matchLabels:
+          type: local
+    
+           

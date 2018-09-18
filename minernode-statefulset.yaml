@@ -1,0 +1,152 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: geth-minernode-svc
+spec:
+  selector:
+    role: minernode
+  type: NodePort
+  ports:
+    - name: minernode-gossip
+      protocol: TCP
+      port: 30303
+      targetPort: 30303
+      nodePort: 30303
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: minernode
+spec:
+  serviceName: 'minernode'
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        role: minernode
+        environment: production
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: node
+          image: xinfinorg/quorum:istanbul-tools-k8s
+          imagePullPolicy: IfNotPresent       
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name               
+          args:          
+          - "geth"          
+          - "--datadir"
+          - "/qdata/dd"          
+          - "--networkid"
+          - "2017"
+          - "--port"
+          - "30303"
+          - "--bootnodes"
+          - "enode://209eec26c79aa31e6397b6e12ed30b37df39392efaf698d509cd1be0ff73edf84cbb22bb5f304c16f63fb501edd6e28d232b93d959a0f6b06db00b764874c9ed@10.244.2.155:30301"
+          - "--rpc"
+          - "--rpccorsdomain"
+          - "*"
+          - "--rpcaddr" 
+          - "0.0.0.0"
+          - "--rpcapi"
+          - "admin,db,eth,debug,miner,net,shh,txpool,personal,web3,quorum,istanbul"
+          - "--rpcport"
+          - "8545"          
+          - "--etherbase"
+          - "0x3d2a20faee28bcda3a047079b0bb4a1a0dfed863"
+          - "--verbosity"
+          - "6"
+          - "--nat"
+          - "none"
+          - "--mine"
+          - "--minerthreads"
+          - "1"
+          - "--syncmode"
+          - "full"
+          - "--istanbul.blockperiod"
+          - "10"
+          - "--nodekey"
+          - "/nodekey/$(POD_NAME)"
+          - "2>&1 >>/qdata/geth.log"          
+
+          ports:
+            - containerPort: 30303
+              protocol: TCP
+              name: geth-tcp
+            - containerPort: 30303
+              protocol: UDP
+              name: geth-udp
+            - containerPort: 8545
+            - containerPort: 8501
+          volumeMounts:
+          - mountPath: /qdata
+            name: geth-persistent-volume   
+          - mountPath: /nodekey
+            name: nodekey                                        
+        
+      initContainers:
+      - name: init-genesis
+        image: xinfinorg/quorum:istanbul-tools-k8s
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash"]
+        args:  
+        - "-c"                   
+        - cp /var/geth/genesis.json /qdata/genesis.json --remove-destination;
+          geth --datadir /qdata/dd init /qdata/genesis.json;      
+        volumeMounts:                            
+        - name: geth-persistent-volume
+          mountPath: /qdata
+        - name: genesis    
+          mountPath: /var/geth
+      - name: import-account
+        image: xinfinorg/quorum:istanbul-tools-k8s
+        imagePullPolicy: IfNotPresent       
+        env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name                       
+        args:        
+        - "geth"
+        - "account"
+        - "import"
+        - "/nodekey/$(POD_NAME)"
+        - "--datadir"
+        - "/qdata"
+        - "--keystore"
+        - "/qdata/dd/keystore"
+        - "--password"
+        - "/nodekey/$(POD_NAME)-password"
+
+        volumeMounts:
+          - mountPath: /qdata
+            name: geth-persistent-volume   
+          - mountPath: /nodekey
+            name: nodekey                                                  
+      volumes:      
+      - name: genesis
+        configMap:
+          name: genesis-geth-config 
+      - name: nodekey
+        secret:
+          secretName: minernode-secret
+
+  volumeClaimTemplates:
+  - metadata:
+      name: geth-persistent-volume
+    spec:
+      storageClassName: manual
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+      selector:
+        matchLabels:
+          type: local
+    
+           
