@@ -1,6 +1,10 @@
 # XinFin-K8S
 
-Pull  image on your host(s)
+Prerequisite
+- Kubernetes Cluster (e.g 1 Master, 2 Workers)
+- Docker
+
+Pull  image on worker node(s)
 ```
 sudo docker pull xinfinorg/quorum:istanbul-tools-k8s
 ```
@@ -10,12 +14,12 @@ Create genesis as ConfigMap
 kubectl create -f XinFin-K8S/genesis-configmap.yaml
 ```
 
-Create nodekeys as secret
+Create nodekeys as secret (base64 encoded)
 ```
 kubectl create -f XinFin-K8S/secret-minernode.yaml
 ```
 
-Pre-provision PV for our nodes to store chaindata (hostpath)
+Pre-provision volumes for our nodes to store chaindata (hostpath)
 ```
 kubectl create -f XinFin-K8S/geth-persistentvolume.yaml
 ```
