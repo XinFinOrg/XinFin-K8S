@@ -9,6 +9,8 @@ Pull  image on worker node(s)
 sudo docker pull xinfinorg/quorum:istanbul-tools-k8s
 ```
 
+#### Clone repository on master & execute the following:
+
 Create genesis as ConfigMap
 ```
 kubectl create -f XinFin-K8S/genesis-configmap.yaml
