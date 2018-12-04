@@ -75,3 +75,8 @@ kubectl port-forward minernode-0 8545:8545
 ```
 geth attach http://localhost:8545
 ```
+
+To stop the network use "delete" instead of "create". 
+(Please note launching a clean network would require manual cleanup of content in /data directory on worker hosts)
+
+
