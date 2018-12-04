@@ -9,7 +9,7 @@ Pull  image on worker node(s)
 sudo docker pull xinfinorg/quorum:istanbul-tools-k8s
 ```
 
-#### Clone repository on master & execute the following:
+#### Clone repository & execute the following:
 
 Create genesis as ConfigMap
 ```
@@ -67,6 +67,11 @@ Deploy constellation-bootnode which can be used for autodiscovery of other const
 kubectl create -f XinFin-K8S/constellation-bootnode-deployment.yaml
 ```
 
-To-Do
-- Test Constellation 
-- Helm Chart
+# Accessing Geth console 
+```
+kubectl port-forward minernode-0 8545:8545
+```
+
+```
+geth attach http://localhost:8545
+```
