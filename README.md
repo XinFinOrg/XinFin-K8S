@@ -1,7 +1,7 @@
 # XinFin-K8S
 
 Prerequisite
-- Kubernetes Cluster (e.g 1 Master, 2 Workers) [Tutorial] (https://www.digitalocean.com/community/tutorials/how-to-create-a-kubernetes-1-10-cluster-using-kubeadm-on-ubuntu-16-04)
+- Kubernetes Cluster (e.g 1 Master, 2 Workers) - [Tutorial - Digital Ocean](https://www.digitalocean.com/community/tutorials/how-to-create-a-kubernetes-1-10-cluster-using-kubeadm-on-ubuntu-16-04)
 - Docker
 
 Pull  image on worker node(s)
